@@ -50,7 +50,7 @@ def schedule_checker():
         sleep(1)
 
 if __name__ == "__main__":
-    schedule.every().day.at("07:00").do(check_birthday)
+    schedule.every().day.at("07:01").do(check_birthday)
     Thread(target=schedule_checker).start()
 
 bot.polling()
