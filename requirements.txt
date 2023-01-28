@@ -1,2 +1,4 @@
 pytelegrambotapi = "*"
 beautifulsoup4 = "*"
+pyparsinf = "3.0.9"
+schedule = "*"

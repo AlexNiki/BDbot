@@ -1,11 +1,14 @@
 import telebot
-import psycopg2
+import os
+import schedule
+import time
+from time import sleep
+from threading import Thread
 
-# main variables
-TOKEN = "1661150170:AAFxO9tIQlwpSB0QgJzgkHjQjBUP_jiylEM"
+from creds import TOKEN
+
 bot = telebot.TeleBot(TOKEN)
-
-SQLALCHEMY_DATABASE_URI = 'postgresql://rc1b-zyki2np4f2xdinrv.mdb.yandexcloud.net'
+birthdayFile = script_dir = os.path.dirname(__file__) + '/res/bd16.txt'
 
 @bot.message_handler(commands=['start', 'go'])
 def start_handler(message):
@@ -16,19 +19,38 @@ def text_handler(message):
     text = message.text
     chat_id = message.chat.id
 
-    conn = psycopg2.connect("""
-        host=rc1b-zyki2np4f2xdinrv.mdb.yandexcloud.net
-        port=6432
-        sslmode=verify-full
-        dbname=hbd-bot
-        user=av-nikiforov
-        password=Pozitiv123
-        target_session_attrs=read-write
-    """)
+    fileName = open(birthdayFile, 'r', encoding="utf-16")
+    flag = 0
+    for line in fileName:
+        if text in line:
+            line = line.split(';')
+            flag = 1
+            msg = line[0] + ' ' + line[1]
+            bot.send_message(message.chat.id, msg)
+    if flag == 0:
+        bot.send_message(message.chat.id, 'Ничего не найдено')
 
-    q = conn.cursor()
-    q.execute('SELECT version()')
-    bot.send_message(message.chat.id, q.fetchone())
-    conn.close()
+
+def check_birthday():
+    today = time.strftime('%d') + '.' + time.strftime('%m')
+    fileName = open(birthdayFile, 'r', encoding="utf-16")
+    flag = 0
+    for line in fileName:
+        if today in line:
+            line = line.split(';')
+            flag = 1
+            msg = line[0] + ' ' + line[1]
+            bot.send_message('462203157', msg)
+    if flag == 0:
+        bot.send_message('462203157', 'Сегодня дней рождений нет')
+
+def schedule_checker():
+    while True:
+        schedule.run_pending()
+        sleep(1)
+
+if __name__ == "__main__":
+    schedule.every().day.at("07:00").do(check_birthday)
+    Thread(target=schedule_checker).start()
 
 bot.polling()
